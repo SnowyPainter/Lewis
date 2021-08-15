@@ -23,7 +23,10 @@
     <ClInclude Include="Logger.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
-    <ClInclude Include="chfparse.h">
+    <ClInclude Include="chemical_formula.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="atom.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
   </ItemGroup>
