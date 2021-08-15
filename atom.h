@@ -11,6 +11,7 @@ namespace AtomicWorld {
 	private:
 		sf::CircleShape bohrcircle;
 		sf::Text atomNameText;
+		sf::Color border;
 	public:
 		sf::Vector2f CenterPos() {
 			float r = bohrcircle.getRadius();
@@ -28,9 +29,9 @@ namespace AtomicWorld {
 			auto b = atomNameText.getLocalBounds();
 			atomNameText.setPosition(x + r - b.width / 2, y + r - b.height / 2);
 		}
-		Atom(std::string atom, int radius) {
+		Atom(std::string atom, int radius, sf::Color borderColor) {
 			Logger l = Logger("AtomicWorld::Atom");
-			
+			border = borderColor;
 			atomNameText.setFont(font);
 			atomNameText.setCharacterSize(35);
 			atomNameText.setStyle(sf::Text::Bold);
@@ -38,8 +39,9 @@ namespace AtomicWorld {
 			atomNameText.setFillColor(sf::Color::Black);
 
 			bohrcircle.setFillColor(sf::Color::White);
-			bohrcircle.setOutlineColor(sf::Color::Green);
-			bohrcircle.setOutlineThickness(5);
+			bohrcircle.setOutlineColor(border);
+			bohrcircle.setOutlineThickness(7);
+			bohrcircle.setFillColor(sf::Color(237, 237, 237)); //#ededed
 			bohrcircle.setRadius(radius);
 
 			Move(0, 0);
@@ -54,7 +56,7 @@ namespace AtomicWorld {
 			return this;
 		}
 		void UnSelect() {
-			bohrcircle.setOutlineColor(sf::Color::Green);
+			bohrcircle.setOutlineColor(border);
 		}
 	};
 }
