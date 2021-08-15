@@ -26,13 +26,20 @@ public:
 				n++;
 			} while (isupper(raw[i]) && islower(i + n));
 			i += n - 1;
-			if (isupper(raw[i + 1]) || i+1 >= raw.length()) {
+			std::string number;
+			int m = 0;
+			if (i + 1 >= raw.length() || isupper(raw[i + 1])) {
 				atoms.push_back(std::make_tuple(atom, 1));
+				continue;
 			}
-			else {
-				int c = raw[i + 1] - '0';
-				atoms.push_back(std::make_tuple(atom, c));
-				i++;
+			while (i + m < raw.length() && !isupper(raw[i + m + 1])) {
+				number.push_back(raw[i + m + 1]);
+				m++;
+			}
+			
+			if (number.length() > 0) {
+				atoms.push_back(std::make_tuple(atom, std::stoi(number)));
+				i += m;
 			}
 		}
 		return atoms;
