@@ -160,6 +160,8 @@
   <ItemGroup>
     <ClInclude Include="atom.h" />
     <ClInclude Include="chemical_formula.h" />
+    <ClInclude Include="dictionary.h" />
+    <ClInclude Include="hsv.h" />
     <ClInclude Include="Logger.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

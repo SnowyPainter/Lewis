@@ -43,4 +43,14 @@ namespace electron {
 		{16, 2.58},
 		{17, 3.16}
 	};
+
+	static int GetOutermosts(int number) {
+		int n = 1;
+		int e_sum = 0;
+		while (2 * (n * n) < number) {
+			e_sum += 2 * (n * n);
+			n++;
+		}
+		return number - e_sum;
+	}
 }

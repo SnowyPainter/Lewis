@@ -29,5 +29,11 @@
     <ClInclude Include="atom.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="hsv.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="dictionary.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

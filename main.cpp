@@ -2,6 +2,7 @@
 #include "atom.h"
 #include "Logger.h"
 #include "hsv.h"
+#include "dictionary.h"
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -10,11 +11,21 @@
 #include <cctype>
 #include <locale>
 #include <map>
+#include <memory>
+#include <string>
+#include <stdexcept>
 
 namespace config {
 	const sf::VideoMode videoMode(1600, 864);
 	const sf::String title("Lewis");
 	const int style = sf::Style::Close;
+}
+
+std::string formattedInfo(std::string name, int number, int om, float ng) {
+	return "Symbol : "+name+"\nAtomic Number["
+		+std::to_string(number)+"]\nElectronegativity\n"
+		+std::to_string(ng)+"\nOutermosts["
+		+std::to_string(om)+"]";
 }
 
 std::vector<std::string> split(std::string str, char c) {
@@ -66,9 +77,8 @@ int main() {
 	std::mt19937 gen(rseed());
 	std::uniform_int_distribution<int> w(padding, config::videoMode.width - padding);
 	std::uniform_int_distribution<int> h(padding, config::videoMode.height - padding);
-	
 	std::uniform_int_distribution<int> hue(19, 320);
-
+	
 	Logger l = Logger("main");
 
 	l.Log("This program only supports defined 1~18th atoms");
@@ -78,13 +88,18 @@ int main() {
 	app.setFramerateLimit(60);
 	app.setKeyRepeatEnabled(false);
 
-	if (!AtomicWorld::font.loadFromFile("E:/C++/SFML/Lewis/nmr.ttf")) {
+	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/nmr.ttf")) {
 		l.Error("There's an error with loading nmr.ttf font");
 	}
-	l.Log("Parsing Chemical Formula to some tuples ... ");
+
+	l.Log("Please write down a Chemical Formula.");
+	//std::cin >> c;
 	std::string c = "O2 + H2";
+
+	l.Log("Parsing Chemical Formula to some tuples ... ");
+
 	std::map<std::string, std::vector<std::tuple<std::string, int>>> parsed_formulas;
-	std::vector<AtomicWorld::Atom> atoms;
+	std::vector<sf::Atom> atoms;
 	auto chemical_formulas = split(c, '+');
 	for (int i = 0; i < chemical_formulas.size(); i++) {
 		chemical_formulas[i] = trim(chemical_formulas[i]);
@@ -94,10 +109,10 @@ int main() {
 		
 		sf::Color colorTheme = sf::hsv(hue(gen), 100, 100);
 
-		for (int i = 0; i < parsed.size(); i++) {
-			std::cout << "Atom named : " << std::get<0>(parsed[i]) << ", Generated " << std::get<1>(parsed[i]) << std::endl;
-			for (int j = 0; j < std::get<1>(parsed[i]); j++) {
-				auto atom = AtomicWorld::Atom(std::get<0>(parsed[i]), 60, colorTheme);
+		for (int j = 0; j < parsed.size(); j++) {
+			std::cout << "Atom named : " << std::get<0>(parsed[j]) << ", Generated " << std::get<1>(parsed[j]) << std::endl;
+			for (int k = 0; k < std::get<1>(parsed[j]); k++) {
+				auto atom = sf::Atom(std::get<0>(parsed[j]), 60, colorTheme);
 				atom.Move(w(gen), h(gen));
 				atoms.push_back(atom);
 			}
@@ -109,6 +124,12 @@ int main() {
 	auto selectedAtom = atoms[0].Select();
 	float downest = config::videoMode.height;
 	float rightest = config::videoMode.width;
+	bool infoDisplayed = false;
+	sf::Text atomDetailText;
+	atomDetailText.setFont(sf::font);
+	atomDetailText.setFillColor(sf::Color::Black);
+	atomDetailText.setCharacterSize(15);
+
 	while (app.isOpen())
 	{
 		sf::Event event;
@@ -162,14 +183,44 @@ int main() {
 					}
 					selectedAtom->UnSelect();
 					selectedAtom = nearest->Select();
+					infoDisplayed = false;
 				}
 
 			}
+			else if (event.type == sf::Event::MouseButtonPressed) {
+				auto p = sf::Mouse::getPosition(app);
+				selectedAtom->Move(p.x, p.y);
+				atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
+			}
+
+			//Show detail of atom
+			if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Key::I) {
+				if (infoDisplayed)
+					infoDisplayed = false;
+				else {
+					int number = selectedAtom->GetAtomNumber();
+					if (number == -1) {
+						l.Error("Atom name is unable to use, Program shutdown");
+						return -1;
+					}
+					int outermosts = electron::GetOutermosts(number);
+					float negativity = electron::Negativity[number];
+					auto text = formattedInfo(selectedAtom->GetSymbol(), number, outermosts, negativity);
+					std::cout << text << std::endl;
+					atomDetailText.setString(text);
+					atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
+					infoDisplayed = true;
+				}
+			}
 		}
+
 		app.clear(sf::Color::White);
 
 		for (int i = 0; i < atoms.size(); i++)
 			atoms[i].Draw(&app);
+
+		if (infoDisplayed)
+			app.draw(atomDetailText);
 
 		app.display();
 	}
