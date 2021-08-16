@@ -79,9 +79,7 @@ std::string trim(std::string s) {
 sf::Text currSelectedText;
 bool bonding = false;
 void selectedAtomChanged() {
-	if (bonding) {
-
-	}
+	
 }
 
 int main() {
@@ -136,6 +134,7 @@ int main() {
 
 	sf::Atom * pseudoBondStart = nullptr, * pseudoBondEnd = nullptr;
 	std::vector<sf::Vertex*> pseudoLines;
+	std::vector<sf::Atom> pseudoBoundAtoms;
 
 	auto selectedAtom = atoms[0].Select();
 	float downest = config::videoMode.height;
@@ -223,6 +222,8 @@ int main() {
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
+				pseudoLines = std::vector<sf::Vertex*>();
+
 				auto p = sf::Mouse::getPosition(app);
 				selectedAtom->Move(p.x, p.y);
 				atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
@@ -241,13 +242,21 @@ int main() {
 					int outermosts = electron::GetOutermosts(number);
 					float negativity = electron::Negativity[number];
 					auto text = formattedInfo(selectedAtom->GetSymbol(), number, outermosts, negativity);
-					std::cout << text << std::endl;
 					atomDetailText.setString(text);
 					atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
 					infoDisplayed = true;
 				}
 			}
 		}
+
+		//pseudo connections text
+		for (auto line : pseudoLines) {
+			//if it has a shared point, them join into one molecule
+			//if not, make new molecule
+
+
+		}
+
 
 		if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
 			sf::Vertex *line = new sf::Vertex[2]
@@ -256,6 +265,9 @@ int main() {
 				sf::Vertex(sf::Vector2f(pseudoBondEnd->CenterPos()), sf::Color::Red)
 			};
 			
+			pseudoBoundAtoms.push_back(*pseudoBondStart);
+			pseudoBoundAtoms.push_back(*pseudoBondEnd);
+
 			pseudoLines.push_back(line);
 		}
 
