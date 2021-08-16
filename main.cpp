@@ -1,3 +1,6 @@
+#pragma warning( disable : 4244)
+#pragma warning( disable : 26451)
+
 #include "chemical_formula.h"
 #include "atom.h"
 #include "Logger.h"
@@ -22,11 +25,12 @@ namespace config {
 }
 
 std::string formattedInfo(std::string name, int number, int om, float ng) {
-	return "Symbol : "+name+"\nAtomic Number["
-		+std::to_string(number)+"]\nElectronegativity\n"
-		+std::to_string(ng)+"\nOutermosts["
-		+std::to_string(om)+"]";
+	return "Symbol : " + name + "\nAtomic Number["
+		+ std::to_string(number) + "]\nElectronegativity\n"
+		+ std::to_string(ng) + "\nOutermosts["
+		+ std::to_string(om) + "]";
 }
+
 
 std::vector<std::string> split(std::string str, char c) {
 
@@ -71,6 +75,15 @@ std::string trim(std::string s) {
 	return s;
 }
 
+//notice
+sf::Text currSelectedText;
+bool bonding = false;
+void selectedAtomChanged() {
+	if (bonding) {
+
+	}
+}
+
 int main() {
 	int padding = 160;
 	std::random_device rseed;
@@ -78,7 +91,7 @@ int main() {
 	std::uniform_int_distribution<int> w(padding, config::videoMode.width - padding);
 	std::uniform_int_distribution<int> h(padding, config::videoMode.height - padding);
 	std::uniform_int_distribution<int> hue(19, 320);
-	
+
 	Logger l = Logger("main");
 
 	l.Log("This program only supports defined 1~18th atoms");
@@ -88,8 +101,8 @@ int main() {
 	app.setFramerateLimit(60);
 	app.setKeyRepeatEnabled(false);
 
-	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/nmr.ttf")) {
-		l.Error("There's an error with loading nmr.ttf font");
+	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RobotoMono-Light.ttf")) {
+		l.Error("There's an error with loading RobotoMono-Light.ttf font");
 	}
 
 	l.Log("Please write down a Chemical Formula.");
@@ -106,7 +119,7 @@ int main() {
 		parsed_formulas.insert({ chemical_formulas[i], chemical_formula::Parse(chemical_formulas[i]) });
 		auto parsed = parsed_formulas[chemical_formulas[i]];
 		std::cout << "Parsed chemical formula : " << chemical_formulas[i] << std::endl;
-		
+
 		sf::Color colorTheme = sf::hsv(hue(gen), 100, 100);
 
 		for (int j = 0; j < parsed.size(); j++) {
@@ -121,14 +134,21 @@ int main() {
 
 	l.Log("Done. all initializing & parsing");
 
+	sf::Atom * pseudoBondStart = nullptr, * pseudoBondEnd = nullptr;
+	std::vector<sf::Vertex*> pseudoLines;
+
 	auto selectedAtom = atoms[0].Select();
 	float downest = config::videoMode.height;
 	float rightest = config::videoMode.width;
 	bool infoDisplayed = false;
 	sf::Text atomDetailText;
+
 	atomDetailText.setFont(sf::font);
+	currSelectedText.setFont(sf::font);
 	atomDetailText.setFillColor(sf::Color::Black);
+	currSelectedText.setFillColor(sf::Color::Black);
 	atomDetailText.setCharacterSize(15);
+	currSelectedText.setCharacterSize(20);
 
 	while (app.isOpen())
 	{
@@ -138,6 +158,13 @@ int main() {
 			if (event.type == sf::Event::Closed)
 				app.close();
 			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::B) {
+					if (!bonding) {
+						pseudoBondStart = selectedAtom;
+						pseudoBondEnd = nullptr;
+					}
+					bonding = true;
+				}
 				if ((event.key.code == sf::Keyboard::Up ||
 					event.key.code == sf::Keyboard::Down ||
 					event.key.code == sf::Keyboard::Left ||
@@ -181,11 +208,19 @@ int main() {
 							}
 						}
 					}
+
 					selectedAtom->UnSelect();
 					selectedAtom = nearest->Select();
 					infoDisplayed = false;
+
 				}
 
+			}
+			if (event.type == sf::Event::KeyReleased) {
+				if (event.key.code == sf::Keyboard::B) {
+					bonding = false;
+					pseudoBondEnd = selectedAtom;
+				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
 				auto p = sf::Mouse::getPosition(app);
@@ -214,7 +249,22 @@ int main() {
 			}
 		}
 
+		if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
+			sf::Vertex *line = new sf::Vertex[2]
+			{
+				sf::Vertex(sf::Vector2f(pseudoBondStart->CenterPos()), sf::Color::Red),
+				sf::Vertex(sf::Vector2f(pseudoBondEnd->CenterPos()), sf::Color::Red)
+			};
+			
+			pseudoLines.push_back(line);
+		}
+
+
 		app.clear(sf::Color::White);
+		
+		for (auto l : pseudoLines) {
+			app.draw(l, 2, sf::Lines);
+		}
 
 		for (int i = 0; i < atoms.size(); i++)
 			atoms[i].Draw(&app);

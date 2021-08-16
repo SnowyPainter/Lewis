@@ -7,6 +7,7 @@
 
 namespace sf {
 	sf::Font font;
+
 	class Atom {
 	private:
 		sf::CircleShape bohrcircle;
@@ -14,6 +15,7 @@ namespace sf {
 		sf::Text atomNameText;
 		sf::Color border;
 	public:
+		Atom() {}
 		Atom(std::string atom, int radius, sf::Color borderColor) {
 			this->atom = atom;
 			Logger l = Logger("AtomicWorld::Atom");
@@ -75,5 +77,9 @@ namespace sf {
 		void UnSelect() {
 			bohrcircle.setOutlineColor(border);
 		}
+	};
+
+	class Molecule {
+
 	};
 }
