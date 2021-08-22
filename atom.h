@@ -80,8 +80,4 @@ namespace sf {
 			bohrcircle.setOutlineColor(border);
 		}
 	};
-
-	class Molecule {
-
-	};
 }

@@ -159,7 +159,13 @@ int main() {
 			if (event.type == sf::Event::Closed)
 				app.close();
 			if (event.type == sf::Event::KeyPressed) {
-				if (event.key.code == sf::Keyboard::B) {
+				if (event.key.code == sf::Keyboard::Enter) {
+					std::cout << "Currently, Molecules" << std::endl;
+					for (auto m : mc.GetMolecules()) {
+						std::cout << chemical_formula::Frame(m) << std::endl;
+					}
+				}
+				else if (event.key.code == sf::Keyboard::B) {
 					if (!bonding) {
 						pseudoBondStart = selectedAtom;
 						pseudoBondEnd = nullptr;
@@ -221,6 +227,9 @@ int main() {
 				if (event.key.code == sf::Keyboard::B) {
 					bonding = false;
 					pseudoBondEnd = selectedAtom;
+					if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
+						mc.AddPair(pseudoBondStart, pseudoBondEnd);
+					}
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
@@ -248,11 +257,6 @@ int main() {
 				}
 			}
 		}
-
-		if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
-			mc.AddPair(pseudoBondStart, pseudoBondEnd);
-		}
-
 
 		app.clear(sf::Color::White);
 		

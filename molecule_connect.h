@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <vector>
+#include <string>
 #include "atom.h"
 class molecule_connect {
 private:
@@ -30,13 +31,24 @@ public:
 			}
 		}
 		if (!paired) {
-			connections.push_back(std::vector<sf::Atom*>());
+			if(connections.size() == 0) connections.push_back(std::vector<sf::Atom*>());
 			connections[connections.size() - 1].push_back(at1);
 			connections[connections.size() - 1].push_back(at2);
 			return;
 		}
 	}
 
+	std::vector<std::string> GetMolecules() {
+		std::vector<std::string> molecules;
+		for (auto molecule : connections) {
+			std::string f = "";
+			for (auto atom : molecule) {
+				f += atom->GetSymbol();
+			}
+			molecules.push_back(f);
+		}
+		return molecules;
+	}
 	void Draw(sf::RenderWindow* app) {
 
 		for (auto& conn : connections) {

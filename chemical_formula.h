@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <map>
 //chemical formula parser
 
 
@@ -43,5 +44,20 @@ public:
 			}
 		}
 		return atoms;
+	}
+	static std::string Frame(std::string raw) {
+		std::map<char, int> symbolCount;
+
+		for (const auto& c : raw) {
+			symbolCount[c]++;
+		}
+		
+		std::string framed = "";
+		for (auto counts = symbolCount.begin(); counts != symbolCount.end();counts++) {
+			framed.push_back(counts->first);
+			if(counts->second > 1)
+				framed += std::to_string(counts->second);
+		}
+		return framed;
 	}
 };
