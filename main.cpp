@@ -3,9 +3,11 @@
 
 #include "chemical_formula.h"
 #include "atom.h"
+#include "molecule_connect.h"
 #include "Logger.h"
 #include "hsv.h"
 #include "dictionary.h"
+
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -99,14 +101,14 @@ int main() {
 	app.setFramerateLimit(60);
 	app.setKeyRepeatEnabled(false);
 
-	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RobotoMono-Light.ttf")) {
+	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RampartOne-Regular.ttf")) {
 		l.Error("There's an error with loading RobotoMono-Light.ttf font");
 	}
 
 	l.Log("Please write down a Chemical Formula.");
 	//std::cin >> c;
 	std::string c = "O2 + H2";
-
+	const int standard_raidus = 25;
 	l.Log("Parsing Chemical Formula to some tuples ... ");
 
 	std::map<std::string, std::vector<std::tuple<std::string, int>>> parsed_formulas;
@@ -123,7 +125,8 @@ int main() {
 		for (int j = 0; j < parsed.size(); j++) {
 			std::cout << "Atom named : " << std::get<0>(parsed[j]) << ", Generated " << std::get<1>(parsed[j]) << std::endl;
 			for (int k = 0; k < std::get<1>(parsed[j]); k++) {
-				auto atom = sf::Atom(std::get<0>(parsed[j]), 60, colorTheme);
+				auto symbol = std::get<0>(parsed[j]);
+				auto atom = sf::Atom(symbol, electron::Negativity[electron::Number[symbol]] * standard_raidus, colorTheme);
 				atom.Move(w(gen), h(gen));
 				atoms.push_back(atom);
 			}
@@ -132,9 +135,8 @@ int main() {
 
 	l.Log("Done. all initializing & parsing");
 
+	molecule_connect mc;
 	sf::Atom * pseudoBondStart = nullptr, * pseudoBondEnd = nullptr;
-	std::vector<sf::Vertex*> pseudoLines;
-	std::vector<sf::Atom> pseudoBoundAtoms;
 
 	auto selectedAtom = atoms[0].Select();
 	float downest = config::videoMode.height;
@@ -222,8 +224,6 @@ int main() {
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
-				pseudoLines = std::vector<sf::Vertex*>();
-
 				auto p = sf::Mouse::getPosition(app);
 				selectedAtom->Move(p.x, p.y);
 				atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
@@ -249,34 +249,14 @@ int main() {
 			}
 		}
 
-		//pseudo connections text
-		for (auto line : pseudoLines) {
-			//if it has a shared point, them join into one molecule
-			//if not, make new molecule
-
-
-		}
-
-
 		if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
-			sf::Vertex *line = new sf::Vertex[2]
-			{
-				sf::Vertex(sf::Vector2f(pseudoBondStart->CenterPos()), sf::Color::Red),
-				sf::Vertex(sf::Vector2f(pseudoBondEnd->CenterPos()), sf::Color::Red)
-			};
-			
-			pseudoBoundAtoms.push_back(*pseudoBondStart);
-			pseudoBoundAtoms.push_back(*pseudoBondEnd);
-
-			pseudoLines.push_back(line);
+			mc.AddPair(pseudoBondStart, pseudoBondEnd);
 		}
 
 
 		app.clear(sf::Color::White);
 		
-		for (auto l : pseudoLines) {
-			app.draw(l, 2, sf::Lines);
-		}
+		mc.Draw(&app);
 
 		for (int i = 0; i < atoms.size(); i++)
 			atoms[i].Draw(&app);

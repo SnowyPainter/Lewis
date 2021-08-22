@@ -35,5 +35,8 @@
     <ClInclude Include="dictionary.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="molecule_connect.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

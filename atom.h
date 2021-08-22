@@ -28,7 +28,7 @@ namespace sf {
 
 			bohrcircle.setFillColor(sf::Color::White);
 			bohrcircle.setOutlineColor(border);
-			bohrcircle.setOutlineThickness(7);
+			bohrcircle.setOutlineThickness(5);
 			bohrcircle.setFillColor(sf::Color(237, 237, 237)); //#ededed
 			bohrcircle.setRadius(radius);
 
@@ -68,13 +68,15 @@ namespace sf {
 
 			bohrcircle.setPosition(x, y);
 			auto b = atomNameText.getLocalBounds();
-			atomNameText.setPosition(x + r - b.width / 2, y + r - b.height / 2);
+			atomNameText.setPosition(x + r - (b.width/2), y + r - (b.height/2));
 		}
 		Atom* Select() {
-			bohrcircle.setOutlineColor(sf::Color::Red);
+			bohrcircle.setOutlineThickness(14);
+			bohrcircle.setOutlineColor(sf::Color::Color(77, 242, 0));
 			return this;
 		}
 		void UnSelect() {
+			bohrcircle.setOutlineThickness(5);
 			bohrcircle.setOutlineColor(border);
 		}
 	};
