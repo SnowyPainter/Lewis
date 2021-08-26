@@ -12,7 +12,7 @@ private:
 	}
 public:
 	molecule_connect() {
-		connections.push_back(std::vector<sf::Atom*>());
+		
 	}
 	void AddPair(sf::Atom* at1, sf::Atom* at2) {
 		bool paired = false;

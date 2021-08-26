@@ -96,6 +96,12 @@ int main() {
 
 	l.Log("This program only supports defined 1~18th atoms");
 
+	l.Log("Please write down a Chemical Formula.");
+
+	std::string c = "O2 + H2"; //Example
+	std::getline(std::cin, c);
+	std::cout << "--------------" << std::endl;
+
 	l.Log("Initializing RenderWindow and settings ... ");
 	sf::RenderWindow app(config::videoMode, config::title, config::style);
 	app.setFramerateLimit(60);
@@ -104,10 +110,7 @@ int main() {
 	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RampartOne-Regular.ttf")) {
 		l.Error("There's an error with loading RobotoMono-Light.ttf font");
 	}
-
-	l.Log("Please write down a Chemical Formula.");
-	//std::cin >> c;
-	std::string c = "O2 + H2";
+	
 	const int standard_raidus = 25;
 	l.Log("Parsing Chemical Formula to some tuples ... ");
 
