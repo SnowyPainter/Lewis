@@ -31,7 +31,7 @@ public:
 			}
 		}
 		if (!paired) {
-			if(connections.size() == 0) connections.push_back(std::vector<sf::Atom*>());
+			connections.push_back(std::vector<sf::Atom*>());
 			connections[connections.size() - 1].push_back(at1);
 			connections[connections.size() - 1].push_back(at2);
 			return;
