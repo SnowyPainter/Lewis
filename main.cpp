@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "hsv.h"
 #include "dictionary.h"
-
+#include "Gui/posboost.h"
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -20,12 +20,6 @@
 #include <string>
 #include <stdexcept>
 
-namespace config {
-	const sf::VideoMode videoMode(1600, 864);
-	const sf::String title("Lewis");
-	const int style = sf::Style::Close;
-}
-
 std::string formattedInfo(std::string name, int number, int om, float ng) {
 	return "Symbol : " + name + "\nAtomic Number["
 		+ std::to_string(number) + "]\nElectronegativity\n"
@@ -33,6 +27,12 @@ std::string formattedInfo(std::string name, int number, int om, float ng) {
 		+ std::to_string(om) + "]";
 }
 
+namespace config {
+	const sf::VideoMode videoMode(1600, 864);
+	sf::String title("Lewis");
+	const int style = sf::Style::Close;
+	const int standard_raidus = 24;
+}
 
 std::vector<std::string> split(std::string str, char c) {
 
@@ -77,46 +77,61 @@ std::string trim(std::string s) {
 	return s;
 }
 
-//notice
-sf::Text currSelectedText;
-bool bonding = false;
-void selectedAtomChanged() {
-	
-}
+enum class Id {
+	AtomDetailText,
+	CurrentState,
+
+	Count,
+};
 
 int main() {
+	Logger l = Logger("main");
+	//release : E:/C++/SFML/Lewis/RampartOne-Regular.ttf
+	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RampartOne-Regular.ttf")) {
+		l.Error("There's an error with loading RobotoMono-Light.ttf font");
+	}
+
+	bool infoDisplayed = false;
+	bool bonding = false;
 	int padding = 160;
 	std::random_device rseed;
 	std::mt19937 gen(rseed());
 	std::uniform_int_distribution<int> w(padding, config::videoMode.width - padding);
 	std::uniform_int_distribution<int> h(padding, config::videoMode.height - padding);
 	std::uniform_int_distribution<int> hue(19, 320);
+	
+	molecule_connect moleculeConnector;
+	sf::Atom* pseudoBondStart = nullptr, * pseudoBondEnd = nullptr;
+	std::map<Id,sf::Text> Text;
 
-	Logger l = Logger("main");
+	for (int i = 0; i < (int)Id::Count; i++) {
+		sf::Text t;
+		t.setPosition(0, 0);
+		t.setFont(sf::font);
+		t.setFillColor(sf::Color::Black);
+		t.setCharacterSize(15);
+		Text[(Id)i] = t;
+	}
+	Text[Id::CurrentState].setCharacterSize(30);
+	Text[Id::CurrentState].setPosition(config::videoMode.width / 2, 0);
 
 	l.Log("This program only supports defined 1~18th atoms");
-
 	l.Log("Please write down a Chemical Formula.");
 
-	std::string c = "O2 + H2"; //Example
-	std::getline(std::cin, c);
-	std::cout << "--------------" << std::endl;
-
+	std::string input = "O2 + H2"; //Example
+	// std::getline(std::cin, c);
+	
 	l.Log("Initializing RenderWindow and settings ... ");
+	config::title += " " + input;
 	sf::RenderWindow app(config::videoMode, config::title, config::style);
 	app.setFramerateLimit(60);
 	app.setKeyRepeatEnabled(false);
 
-	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RampartOne-Regular.ttf")) {
-		l.Error("There's an error with loading RobotoMono-Light.ttf font");
-	}
-	
-	const int standard_raidus = 25;
 	l.Log("Parsing Chemical Formula to some tuples ... ");
 
 	std::map<std::string, std::vector<std::tuple<std::string, int>>> parsed_formulas;
 	std::vector<sf::Atom> atoms;
-	auto chemical_formulas = split(c, '+');
+	auto chemical_formulas = split(input, '+');
 	for (int i = 0; i < chemical_formulas.size(); i++) {
 		chemical_formulas[i] = trim(chemical_formulas[i]);
 		parsed_formulas.insert({ chemical_formulas[i], chemical_formula::Parse(chemical_formulas[i]) });
@@ -129,7 +144,7 @@ int main() {
 			std::cout << "Atom named : " << std::get<0>(parsed[j]) << ", Generated " << std::get<1>(parsed[j]) << std::endl;
 			for (int k = 0; k < std::get<1>(parsed[j]); k++) {
 				auto symbol = std::get<0>(parsed[j]);
-				auto atom = sf::Atom(symbol, electron::Negativity[electron::Number[symbol]] * standard_raidus, colorTheme);
+				auto atom = sf::Atom(symbol, electron::Negativity[electron::Number[symbol]] * config::standard_raidus, colorTheme);
 				atom.Move(w(gen), h(gen));
 				atoms.push_back(atom);
 			}
@@ -138,21 +153,9 @@ int main() {
 
 	l.Log("Done. all initializing & parsing");
 
-	molecule_connect mc;
-	sf::Atom * pseudoBondStart = nullptr, * pseudoBondEnd = nullptr;
-
 	auto selectedAtom = atoms[0].Select();
 	float downest = config::videoMode.height;
 	float rightest = config::videoMode.width;
-	bool infoDisplayed = false;
-	sf::Text atomDetailText;
-
-	atomDetailText.setFont(sf::font);
-	currSelectedText.setFont(sf::font);
-	atomDetailText.setFillColor(sf::Color::Black);
-	currSelectedText.setFillColor(sf::Color::Black);
-	atomDetailText.setCharacterSize(15);
-	currSelectedText.setCharacterSize(20);
 
 	while (app.isOpen())
 	{
@@ -164,11 +167,12 @@ int main() {
 			if (event.type == sf::Event::KeyPressed) {
 				if (event.key.code == sf::Keyboard::Enter) {
 					std::cout << "Currently, Molecules" << std::endl;
-					for (auto m : mc.GetMolecules()) {
+					for (auto m : moleculeConnector.GetMolecules()) {
 						std::cout << chemical_formula::Frame(m) << std::endl;
 					}
 				}
 				else if (event.key.code == sf::Keyboard::B) {
+					Text[Id::CurrentState].setString("Bonding");
 					if (!bonding) {
 						pseudoBondStart = selectedAtom;
 						pseudoBondEnd = nullptr;
@@ -222,23 +226,24 @@ int main() {
 					selectedAtom->UnSelect();
 					selectedAtom = nearest->Select();
 					infoDisplayed = false;
-
+					Text[Id::CurrentState].setString(selectedAtom->GetSymbol());
 				}
 
 			}
 			if (event.type == sf::Event::KeyReleased) {
 				if (event.key.code == sf::Keyboard::B) {
+					Text[Id::CurrentState].setString("Complete");
 					bonding = false;
 					pseudoBondEnd = selectedAtom;
 					if (pseudoBondStart != nullptr && pseudoBondEnd != nullptr) {
-						mc.AddPair(pseudoBondStart, pseudoBondEnd);
+						moleculeConnector.AddPair(pseudoBondStart, pseudoBondEnd);
 					}
 				}
 			}
 			else if (event.type == sf::Event::MouseButtonPressed) {
 				auto p = sf::Mouse::getPosition(app);
 				selectedAtom->Move(p.x, p.y);
-				atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
+				Text[Id::AtomDetailText].setPosition(selectedAtom->GetDetailTextPosition());
 			}
 
 			//Show detail of atom
@@ -254,8 +259,8 @@ int main() {
 					int outermosts = electron::GetOutermosts(number);
 					float negativity = electron::Negativity[number];
 					auto text = formattedInfo(selectedAtom->GetSymbol(), number, outermosts, negativity);
-					atomDetailText.setString(text);
-					atomDetailText.setPosition(selectedAtom->GetDetailTextPosition());
+					Text[Id::AtomDetailText].setString(text);
+					Text[Id::AtomDetailText].setPosition(selectedAtom->GetDetailTextPosition());
 					infoDisplayed = true;
 				}
 			}
@@ -263,13 +268,18 @@ int main() {
 
 		app.clear(sf::Color::White);
 		
-		mc.Draw(&app);
+		moleculeConnector.Draw(&app);
 
 		for (int i = 0; i < atoms.size(); i++)
 			atoms[i].Draw(&app);
 
 		if (infoDisplayed)
-			app.draw(atomDetailText);
+			app.draw(Text[Id::AtomDetailText]);
+		for (int i = 0; i < (int)Id::Count; i++) {
+			if ((Id)i == Id::AtomDetailText) continue;
+
+			app.draw(Text[(Id)i]);
+		}
 
 		app.display();
 	}

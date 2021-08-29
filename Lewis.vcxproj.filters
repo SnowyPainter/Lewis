@@ -38,5 +38,8 @@
     <ClInclude Include="molecule_connect.h">
       <Filter>소스 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Gui\posboost.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

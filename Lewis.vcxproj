@@ -161,6 +161,7 @@
     <ClInclude Include="atom.h" />
     <ClInclude Include="chemical_formula.h" />
     <ClInclude Include="dictionary.h" />
+    <ClInclude Include="Gui\posboost.h" />
     <ClInclude Include="hsv.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="molecule_connect.h" />
