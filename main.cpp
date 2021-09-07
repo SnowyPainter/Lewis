@@ -87,7 +87,7 @@ enum class Id {
 int main() {
 	Logger l = Logger("main");
 	//release : E:/C++/SFML/Lewis/RampartOne-Regular.ttf
-	if (!sf::font.loadFromFile("E:/C++/SFML/Lewis/RampartOne-Regular.ttf")) {
+	if (!sf::font.loadFromFile("./RampartOne-Regular.ttf")) {
 		l.Error("There's an error with loading RobotoMono-Light.ttf font");
 	}
 
@@ -119,7 +119,7 @@ int main() {
 	l.Log("Please write down a Chemical Formula.");
 
 	std::string input = "O2 + H2"; //Example
-	// std::getline(std::cin, c);
+	std::getline(std::cin, input);
 	
 	l.Log("Initializing RenderWindow and settings ... ");
 	config::title += " " + input;
